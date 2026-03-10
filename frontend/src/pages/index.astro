@@ -1,0 +1,164 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { api, type Article } from '../utils/api';
+
+// Fetch articles on page generated (or dynamically if SSR setup)
+let articles: Article[] = [];
+let categories: string[] = [];
+let error: string | null = null;
+
+try {
+  articles = await api.getPublishedArticles();
+  
+  // Extract unique categories for filtering
+  const allCategories = articles.map(a => a.category);
+  categories = [...new Set(allCategories)].filter(Boolean).sort();
+} catch (e) {
+  error = "Failed to load articles. Is the background Worker running?";
+}
+
+// Check for selected category filter in query string (Note: requires hybrid/SSR to be fully dynamic, 
+// but since Astro 4, query params are readable in middleware or client side).
+// For a fully static site, we will handle filtering client-side with Javascript to be snappy!
+---
+
+<Layout title="Home">
+  <div class="mb-10 text-center animate-fade-in">
+    <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 mb-4">
+      Explore our <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600">Knowledge Base</span>
+    </h1>
+    <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+      Find answers, tutorials, and guides to help you get the most out of our tools.
+    </p>
+  </div>
+
+  {error ? (
+    <div class="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200 text-center shadow-sm">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      {error}
+    </div>
+  ) : (
+    <div class="flex flex-col md:flex-row gap-8 items-start">
+      
+      <!-- Sidebar Filters -->
+      <aside class="w-full md:w-64 flex-shrink-0">
+        <div class="bg-white border text-center md:text-left border-slate-200 p-5 rounded-2xl shadow-sm sticky top-24">
+          <h2 class="font-semibold text-slate-900 mb-4 tracking-tight flex items-center justify-center md:justify-start gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
+            Categories
+          </h2>
+          <div class="flex flex-wrap md:flex-col gap-2">
+            <button class="category-btn active text-left px-3 py-2 rounded-lg text-sm transition-all bg-indigo-50 text-indigo-700 font-medium w-full" data-category="all">
+              All Articles
+            </button>
+            {categories.map((category) => (
+              <button class="category-btn text-left px-3 py-2 rounded-lg text-sm transition-all hover:bg-slate-50 text-slate-600 hover:text-slate-900 font-medium w-full group flex justify-between items-center" data-category={category}>
+                <span>{category}</span>
+                <span class="opacity-0 group-hover:opacity-100 transition-opacity">→</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </aside>
+
+      <!-- Articles Grid -->
+      <div class="flex-grow w-full">
+        {articles.length === 0 ? (
+          <div class="text-center py-20 bg-white border border-slate-200 rounded-2xl shadow-sm border-dashed">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-100 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+            </div>
+            <h3 class="text-lg font-medium text-slate-900">No articles yet</h3>
+            <p class="text-slate-500 mt-1 mb-6">Check back later or log in as an admin to write one.</p>
+            <a href="/admin/create" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition-colors shadow-sm cursor-pointer">
+              Write an Article
+            </a>
+          </div>
+        ) : (
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="articles-grid">
+            {articles.map((article) => (
+              <a href={`/article/${article.slug}`} class="article-card block group h-full" data-category={article.category}>
+                <article class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all h-full flex flex-col group-hover:border-indigo-200 relative overflow-hidden">
+                  <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-emerald-50 rounded-bl-full opacity-50 -z-0 transition-transform group-hover:scale-110"></div>
+                  
+                  <div class="relative z-10 flex flex-col h-full">
+                    <div class="mb-3">
+                      <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-600 border border-indigo-100">
+                        {article.category}
+                      </span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors leading-tight">
+                      {article.title}
+                    </h3>
+                    <p class="text-slate-600 text-sm line-clamp-3 mb-4 flex-grow font-normal">
+                      {article.content}
+                    </p>
+                    <div class="flex items-center text-xs text-slate-500 font-medium">
+                      <span>{new Date(article.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <span class="mx-2">&middot;</span>
+                      <span class="flex items-center text-indigo-600 group-hover:underline">
+                        Read more
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 ml-1 transform group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )}
+</Layout>
+
+<script>
+  // Client-side filtering logic
+  document.addEventListener('DOMContentLoaded', () => {
+    const buttons = document.querySelectorAll('.category-btn');
+    const articles = document.querySelectorAll<HTMLElement>('.article-card');
+
+    buttons.forEach(button => {
+      button.addEventListener('click', () => {
+        // Reset active state
+        buttons.forEach(btn => {
+          btn.classList.remove('bg-indigo-50', 'text-indigo-700');
+          btn.classList.add('hover:bg-slate-50', 'text-slate-600', 'hover:text-slate-900');
+        });
+        
+        // Set active state on clicked button
+        button.classList.remove('hover:bg-slate-50', 'text-slate-600', 'hover:text-slate-900');
+        button.classList.add('bg-indigo-50', 'text-indigo-700');
+
+        const selectedCategory = button.getAttribute('data-category');
+
+        articles.forEach(article => {
+          if (selectedCategory === 'all' || article.getAttribute('data-category') === selectedCategory) {
+            article.style.display = 'block';
+            // Trigger reflow for animation
+            article.style.animation = 'none';
+            article.offsetHeight; 
+            article.style.animation = '';
+          } else {
+            article.style.display = 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
+
+<style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+  .article-card {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+</style>

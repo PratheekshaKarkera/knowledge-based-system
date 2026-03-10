@@ -1,0 +1,57 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { api, type Article } from '../../utils/api';
+
+const { slug } = Astro.params;
+
+let article: Article | null = null;
+try {
+  article = await api.getArticleDetails(slug as string);
+} catch (e) {
+  return Astro.redirect('/404');
+}
+
+if (!article) return Astro.redirect('/404');
+---
+
+<Layout title={article.title}>
+  <article class="max-w-3xl mx-auto bg-white border border-slate-200 rounded-2xl p-8 sm:p-10 shadow-sm mt-8">
+    <a href="/" class="inline-flex items-center text-sm font-medium text-indigo-600 hover:text-indigo-800 mb-6 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+      Back to Articles
+    </a>
+
+    <div class="mb-4">
+      <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
+        {article.category}
+      </span>
+    </div>
+
+    <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight mb-4">
+      {article.title}
+    </h1>
+
+    <div class="flex items-center text-sm text-slate-500 font-medium mb-10 pb-6 border-b border-slate-100">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
+          A
+        </div>
+        <span>Admin Team</span>
+      </div>
+      <span class="mx-3">&middot;</span>
+      <time datetime={new Date(article.createdAt).toISOString()}>
+        {new Date(article.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+      </time>
+      {article.updatedAt !== article.createdAt && (
+        <>
+          <span class="mx-3">&middot;</span>
+          <span class="text-slate-400">Updated {new Date(article.updatedAt).toLocaleDateString('en-US')}</span>
+        </>
+      )}
+    </div>
+
+    <div class="prose prose-slate prose-indigo max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-a:text-indigo-600 hover:prose-a:text-indigo-500 whitespace-pre-wrap text-slate-700 text-lg">
+      {article.content}
+    </div>
+  </article>
+</Layout>

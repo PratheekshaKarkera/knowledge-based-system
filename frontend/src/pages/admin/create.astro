@@ -1,0 +1,219 @@
+---
+import Layout from "../../layouts/Layout.astro";
+---
+
+<Layout title="Create Article">
+  <div class="mb-8 flex items-center justify-between">
+    <div>
+      <a
+        href="/admin"
+        class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 mb-2 transition-colors"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="w-4 h-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg
+        >
+        Back to Dashboard
+      </a>
+      <h1 class="text-3xl font-bold text-slate-900 tracking-tight">
+        Create New Article
+      </h1>
+      <p class="text-slate-500 mt-1">
+        Write a comprehensive guide or tutorial for your users.
+      </p>
+    </div>
+  </div>
+
+  <div
+    class="bg-white border text-left border-slate-200 p-8 rounded-2xl shadow-sm max-w-3xl"
+  >
+    <form id="create-form" class="space-y-6">
+      <!-- Error Message Box -->
+      <div
+        id="error-box"
+        class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl shadow-sm text-sm"
+      >
+      </div>
+
+      <!-- Title Input -->
+      <div>
+        <label
+          for="title"
+          class="block text-sm font-semibold text-slate-900 mb-1.5"
+          >Article Title *</label
+        >
+        <div class="relative">
+          <input
+            type="text"
+            id="title"
+            name="title"
+            required
+            placeholder="e.g. How to deploy a Cloudflare Worker"
+            class="block w-full rounded-xl border-slate-200 px-4 py-3 bg-slate-50 border text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+          />
+        </div>
+      </div>
+
+      <!-- Category Input -->
+      <div>
+        <label
+          for="category"
+          class="block text-sm font-semibold text-slate-900 mb-1.5"
+          >Category *</label
+        >
+        <div class="relative">
+          <input
+            type="text"
+            id="category"
+            name="category"
+            required
+            placeholder="e.g. Tutorials, Engineering, Product Updates"
+            class="block w-full rounded-xl border-slate-200 px-4 py-3 bg-slate-50 border text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none"
+          />
+        </div>
+      </div>
+
+      <!-- Content Textarea -->
+      <div>
+        <label
+          for="content"
+          class="block text-sm font-semibold text-slate-900 mb-1.5 flex justify-between"
+        >
+          <span>Article Content *</span>
+          <span id="char-count" class="text-slate-400 font-normal text-xs"
+            >0 characters (min 50)</span
+          >
+        </label>
+        <textarea
+          id="content"
+          name="content"
+          rows="12"
+          required
+          minlength="50"
+          placeholder="Write your article content here ... (Markdown rendering can be added later)"
+          class="block w-full rounded-xl border-slate-200 px-4 py-3 bg-slate-50 border text-slate-900 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none resize-y"
+        ></textarea>
+      </div>
+
+      <!-- Submit Button -->
+      <div class="pt-2 border-t border-slate-100 flex justify-end gap-3 mt-8">
+        <a
+          href="/admin"
+          class="px-5 py-2.5 rounded-xl font-medium text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors"
+        >
+          Cancel
+        </a>
+        <button
+          type="submit"
+          id="submit-btn"
+          class="inline-flex justify-center items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-medium shadow-sm hover:shadow-md hover:bg-indigo-700 transition-all focus:ring-4 focus:ring-indigo-500/20 outline-none"
+        >
+          <span>Save Document</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="w-4 h-4"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            ><path
+              d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+            ></path><polyline points="17 21 17 13 7 13 7 21"
+            ></polyline><polyline points="7 3 7 8 15 8"></polyline></svg
+          >
+        </button>
+      </div>
+    </form>
+  </div>
+</Layout>
+
+<script>
+  import { api } from "../../utils/api";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.getElementById("create-form") as HTMLFormElement;
+    const errorBox = document.getElementById("error-box");
+    const submitBtn = document.getElementById(
+      "submit-btn",
+    ) as HTMLButtonElement;
+    const contentTextarea = document.getElementById(
+      "content",
+    ) as HTMLTextAreaElement;
+    const charCount = document.getElementById("char-count");
+
+    // Live character count validator
+    if (contentTextarea && charCount) {
+      contentTextarea.addEventListener("input", () => {
+        const len = contentTextarea.value.length;
+        charCount.textContent = `${len} characters (min 50)`;
+        if (len < 50 && len > 0) {
+          charCount.classList.add("text-red-500");
+          charCount.classList.remove("text-emerald-500", "text-slate-400");
+        } else if (len >= 50) {
+          charCount.classList.add("text-emerald-500");
+          charCount.classList.remove("text-red-500", "text-slate-400");
+        } else {
+          charCount.classList.add("text-slate-400");
+          charCount.classList.remove("text-red-500", "text-emerald-500");
+        }
+      });
+    }
+
+    if (form) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        // Reset Error State
+        if (errorBox) {
+          errorBox.classList.add("hidden");
+          errorBox.textContent = "";
+        }
+
+        // Get Form Data
+        const formData = new FormData(form);
+        const title = formData.get("title") as string;
+        const category = formData.get("category") as string;
+        const content = formData.get("content") as string;
+
+        // Visual Feedback
+        submitBtn.disabled = true;
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML =
+          '<span class="flex items-center gap-2"><svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...</span>';
+
+        try {
+          // Send request to Cloudflare Worker API
+          await api.createArticle({ title, category, content });
+
+          // Trigger the toast on the next page load
+          sessionStorage.setItem(
+            "toastMessage",
+            `"${title}" saved successfully!`,
+          );
+
+          // Success! Redirect to Dashboard
+          window.location.href = "/admin";
+        } catch (error: any) {
+          // Formatting Backend Errors for UI Display
+          if (errorBox) {
+            errorBox.classList.remove("hidden");
+            errorBox.textContent = error.message.replace(
+              "invalid request: ",
+              "",
+            );
+          }
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = originalText;
+        }
+      });
+    }
+  });
+</script>

@@ -1,0 +1,7 @@
+name = "knowledge-base-backend"
+main = "src/index.ts"
+compatibility_date = "2024-03-09"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "641266abf37b49c2bd68cb23d1da9ef0"

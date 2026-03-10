@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title} | Knowledge Base</title>
+	</head>
+	<body class="bg-slate-50 min-h-screen text-slate-800 font-sans antialiased selection:bg-indigo-100 selection:text-indigo-900">
+		<!-- Header -->
+		<header class="bg-white border-b border-slate-200 sticky top-0 z-10">
+			<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+				<!-- Logo -->
+				<div class="flex-shrink-0">
+					<a href="/" class="flex items-center gap-2">
+						<div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white font-bold text-xl">
+							K
+						</div>
+						<span class="font-bold text-xl tracking-tight text-slate-900">KnowledgeBase</span>
+					</a>
+				</div>
+				
+				<!-- Navigation Navigation -->
+				<nav class="flex items-center gap-6">
+					<a href="/" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-1.5">
+						<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+						Articles
+					</a>
+					<a href="/search" class="text-sm font-medium text-slate-600 hover:text-indigo-600 transition-colors flex items-center gap-1.5">
+						<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+						Search
+					</a>
+					<div class="w-px h-4 bg-slate-200"></div>
+					<a href="/admin" class="text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors flex items-center gap-1.5">
+						<svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
+						Admin
+					</a>
+				</nav>
+			</div>
+		</header>
+
+		<!-- Main Content -->
+		<main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+			<slot />
+		</main>
+
+		<!-- Footer -->
+		<footer class="mt-auto border-t border-slate-200 bg-white">
+			<div class="max-w-5xl mx-auto px-4 py-6 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
+				&copy; {new Date().getFullYear()} Knowledge Base System. Built with Astro & Cloudflare.
+			</div>
+		</footer>
+	</body>
+</html>
